@@ -1,0 +1,3 @@
+用ChatOpenAI没法输出思考过程，用ChatDeepSeek不支持多模态。
+所以直接用OpenRouter上的Qwen模型，然后用ChatOpenRouter。
+实际部署可能最好自己根据特定模型Provider的输出格式写一个定制的Wrapper。
