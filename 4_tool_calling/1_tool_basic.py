@@ -1,3 +1,6 @@
+"""
+简单的工具调用示例，让模型通过工具获取天气信息，并显示结果。
+"""
 from langchain_openrouter import ChatOpenRouter
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.messages import SystemMessage, HumanMessage, AIMessage
@@ -53,13 +56,13 @@ def show_weather(city: str, temperature: float, condition: str) -> None:
     print(f"{info.city}的天气：温度{info.temperature}°C，状况{info.condition}")
 
 conversation = [
-    SystemMessage(content="你是一个天气预报助手，可以调用工具获取天气信息，并将结果输出为JSON格式。"),
+    SystemMessage(content="你是一个天气预报助手，可以调用工具获取天气信息，并通过工具将结果显示给用户。"),
     HumanMessage(content="北京和上海什么天气？")
 ]
 
 llm_with_tools = llm.bind_tools([get_weather, show_weather])
 
-print("初始对话：")
+print("——————初始对话：")
 response = llm_with_tools.invoke(conversation)
 conversation.append(response)
 
@@ -69,16 +72,24 @@ for tool_call in response.tool_calls:
         tool_response = get_weather.invoke(tool_call)
         conversation.append(tool_response)
     if tool_call['name'] == 'show_weather':
-        show_weather.invoke(tool_call)
+        tool_response = show_weather.invoke(tool_call)
+        conversation.append(tool_response)
 
-print("将工具调用结果加入对话后继续对话：")
-final_response = llm_with_tools.invoke(conversation)
-conversation.append(final_response)
+print("——————将工具调用结果加入对话后继续对话：")
+second_response = llm_with_tools.invoke(conversation)
+conversation.append(second_response)
 
-for tool_call in final_response.tool_calls:
+for tool_call in second_response.tool_calls:
     print(f"工具调用：{tool_call['name']}，参数：{tool_call['args']}")
     if tool_call['name'] == 'get_weather':
         tool_response = get_weather.invoke(tool_call)
         conversation.append(tool_response)
     if tool_call['name'] == 'show_weather':
-        show_weather.invoke(tool_call)
+        tool_response = show_weather.invoke(tool_call)
+        conversation.append(tool_response)
+
+final_response = llm_with_tools.invoke(conversation)
+conversation.append(final_response)
+
+print("——————最终回复：")
+print(final_response.content)
